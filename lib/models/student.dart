@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-enum Department { finance, law, it, medical }
-enum Gender { male, female }
-
 class Student {
   final String firstName;
   final String lastName;
@@ -25,3 +22,6 @@ const departmentIcons = {
   Department.it: Icons.developer_mode,
   Department.medical: Icons.local_pharmacy,
 };
+
+enum Department { finance, law, it, medical }
+enum Gender { male, female }

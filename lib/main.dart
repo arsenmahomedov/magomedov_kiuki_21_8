@@ -11,12 +11,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Студенти',
+      title: 'Список студентів',
       theme: ThemeData(
-        primarySwatch: Colors.teal,
-        scaffoldBackgroundColor: Colors.grey.shade100,
+        primarySwatch: Colors.indigo,
       ),
-      home: StudentsScreen(),
+      home: const StudentListView(),
     );
   }
 }

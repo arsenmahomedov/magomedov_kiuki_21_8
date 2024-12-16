@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import '../models/student.dart';
 
-class StudentItem extends StatelessWidget {
+class SingleStudentCard extends StatelessWidget {
   final Student student;
 
-  const StudentItem({Key? key, required this.student}) : super(key: key);
+  const SingleStudentCard({Key? key, required this.student}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = student.gender == Gender.male
-        ? Colors.blue.withOpacity(0.1)
-        : Colors.pink.withOpacity(0.1);
+    final cardColor = student.gender == Gender.male
+        ? Colors.blue.shade50
+        : Colors.pink.shade50;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -28,12 +29,12 @@ class StudentItem extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.grey.shade200,
+            radius: 25,
+            backgroundColor: Colors.grey.shade300,
             child: Icon(
               departmentIcons[student.department],
-              size: 28,
-              color: Colors.teal,
+              size: 24,
+              color: Colors.grey.shade700,
             ),
           ),
           const SizedBox(width: 16),
@@ -45,13 +46,16 @@ class StudentItem extends StatelessWidget {
                   '${student.firstName} ${student.lastName}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Оцінка: ${student.grade}',
-                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
                 ),
               ],
             ),

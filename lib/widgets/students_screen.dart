@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import '../models/student.dart';
 import 'student_item.dart';
+import 'new_student.dart';
 
-class StudentsScreen extends StatelessWidget {
-  StudentsScreen({Key? key}) : super(key: key);
+class StudentListView extends StatefulWidget {
+  const StudentListView({Key? key}) : super(key: key);
 
-  final List<Student> students = [
+  @override
+  _StudentListViewState createState() => _StudentListViewState();
+}
+
+class _StudentListViewState extends State<StudentListView> {
+  List<Student> studentRecords = [
     Student(
-      firstName: 'Анна',
-      lastName: 'Коваль',
+      firstName: 'Марія',
+      lastName: 'Шевченко',
       department: Department.finance,
       grade: 85,
       gender: Gender.female,
@@ -20,42 +26,76 @@ class StudentsScreen extends StatelessWidget {
       grade: 90,
       gender: Gender.male,
     ),
-    Student(
-      firstName: 'Олена',
-      lastName: 'Шевченко',
-      department: Department.medical,
-      grade: 95,
-      gender: Gender.female,
-    ),
-    Student(
-      firstName: 'Іван',
-      lastName: 'Богданов',
-      department: Department.law,
-      grade: 80,
-      gender: Gender.male,
-    ),
   ];
+
+  void _openStudentEditor({Student? student, int? index}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StudentEditor(
+          student: student,
+          onSave: (updatedStudent) {
+            setState(() {
+              if (index == null) {
+                studentRecords.add(updatedStudent);
+              } else {
+                studentRecords[index] = updatedStudent;
+              }
+            });
+          },
+        );
+      },
+    );
+  }
+
+  void _removeStudent(int index) {
+    final removedStudent = studentRecords[index];
+    setState(() {
+      studentRecords.removeAt(index);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${removedStudent.firstName} видалено'),
+        action: SnackBarAction(
+          label: 'Відмінити',
+          onPressed: () {
+            setState(() {
+              studentRecords.insert(index, removedStudent);
+            });
+          },
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Студенти',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 24),
-        ),
-        backgroundColor: Colors.teal,
-        elevation: 2,
+        title: const Text('Список студентів'),
+        backgroundColor: Colors.indigo,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: ListView.separated(
-          itemCount: students.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            return StudentItem(student: students[index]);
-          },
-        ),
+      body: ListView.builder(
+        itemCount: studentRecords.length,
+        itemBuilder: (context, index) {
+          final student = studentRecords[index];
+          return Dismissible(
+            key: ValueKey(student),
+            background: Container(color: Colors.red),
+            onDismissed: (_) => _removeStudent(index),
+            child: InkWell(
+              onTap: () => _openStudentEditor(student: student, index: index),
+              child: SingleStudentCard(student: student), 
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openStudentEditor(),
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.add),
       ),
     );
   }
