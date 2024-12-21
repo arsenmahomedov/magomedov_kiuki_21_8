@@ -1,27 +1,24 @@
-import 'package:flutter/material.dart';
+import 'department.dart';
+
+enum Gender { male, female }
 
 class Student {
+  final String id;
   final String firstName;
   final String lastName;
-  final Department department;
+  final String departmentId;
   final int grade;
   final Gender gender;
 
   Student({
+    required this.id,
     required this.firstName,
     required this.lastName,
-    required this.department,
+    required this.departmentId,
     required this.grade,
     required this.gender,
   });
+
+  Department get department =>
+      predefinedDepartments.firstWhere((dep) => dep.id == departmentId);
 }
-
-const departmentIcons = {
-  Department.finance: Icons.account_balance,
-  Department.law: Icons.balance,
-  Department.it: Icons.developer_mode,
-  Department.medical: Icons.local_pharmacy,
-};
-
-enum Department { finance, law, it, medical }
-enum Gender { male, female }
