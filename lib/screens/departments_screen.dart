@@ -8,7 +8,11 @@ class DepartmentsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final students = ref.watch(studentsProvider);
+    final state = ref.watch(studentsProvider);
+
+    if (state.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
@@ -20,8 +24,8 @@ class DepartmentsScreen extends ConsumerWidget {
       itemCount: predefinedDepartments.length,
       itemBuilder: (context, index) {
         final department = predefinedDepartments[index];
-        final studentCount = students
-            .where((student) => student.departmentId == department.id)
+        final studentCount = state.students
+            .where((student) => student.department.id == department.id)
             .length;
 
         return Card(

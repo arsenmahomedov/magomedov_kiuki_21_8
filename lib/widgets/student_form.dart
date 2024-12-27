@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 import '../models/student.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/students_provider.dart';
 import '../models/department.dart';
 
-class StudentForm extends StatefulWidget {
-  final Student? student;
-  final Function(Student) onSave;
+class StudentForm extends ConsumerStatefulWidget {
+  const StudentForm({
+    super.key,
+    this.studentIndex
+  });
 
-  const StudentForm({super.key, this.student, required this.onSave});
+  final int? studentIndex;
 
   @override
-  State<StudentForm> createState() => _StudentFormState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _StudentFormState();
 }
-
-class _StudentFormState extends State<StudentForm> {
+class _StudentFormState extends ConsumerState<StudentForm> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   Department? _selectedDepartment;
@@ -23,41 +25,51 @@ class _StudentFormState extends State<StudentForm> {
   @override
   void initState() {
     super.initState();
-    if (widget.student != null) {
-      _firstNameController.text = widget.student!.firstName;
-      _lastNameController.text = widget.student!.lastName;
-      _selectedDepartment = predefinedDepartments.firstWhere(
-        (dept) => dept.id == widget.student!.departmentId,
-        orElse: () => predefinedDepartments.first,
-      );
-      _selectedGender = widget.student!.gender;
-      _grade = widget.student!.grade;
+    if (widget.studentIndex != null) {
+      final student = ref.read(studentsProvider).students[widget.studentIndex!];
+      _firstNameController.text = student.firstName;
+      _lastNameController.text = student.lastName;
+      _grade = student.grade;
+      _selectedGender = student.gender;
+      _selectedDepartment = student.department;
     }
   }
 
-  void _saveStudent() {
-    if (_firstNameController.text.isEmpty ||
-        _lastNameController.text.isEmpty ||
-        _selectedDepartment == null ||
-        _selectedGender == null) {
-      return;
+  void _saveStudent() async {
+
+    if (widget.studentIndex != null) {
+      await ref.read(studentsProvider.notifier).edit(
+            widget.studentIndex!,
+            _firstNameController.text.trim(),
+            _lastNameController.text.trim(),
+            _selectedDepartment,
+            _selectedGender,
+            _grade,
+          );
+    } else {
+      await ref.read(studentsProvider.notifier).add(
+            _firstNameController.text.trim(),
+            _lastNameController.text.trim(),
+            _selectedDepartment,
+            _selectedGender,
+            _grade,
+          );
     }
 
-    final newStudent = Student(
-      id: widget.student?.id ?? const Uuid().v4(),
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-      departmentId: _selectedDepartment!.id,
-      grade: _grade,
-      gender: _selectedGender!,
-    );
-
-    widget.onSave(newStudent);
-    Navigator.of(context).pop();
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+    
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(studentsProvider);
+    if(state.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
@@ -113,10 +125,10 @@ class _StudentFormState extends State<StudentForm> {
                         Icon(
                           department.icon,
                           size: 20,
-                          color: Colors.orangeAccent, // Использование кастомного цвета
+                          color: Colors.orangeAccent, 
                         ),
                         const SizedBox(width: 8),
-                        Text(department.name), // Отображение названия факультета
+                        Text(department.name), 
                       ],
                     ),
                   );
@@ -143,7 +155,7 @@ class _StudentFormState extends State<StudentForm> {
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   _buildButton(
-                    label: widget.student == null ? 'Додати' : 'Оновити',
+                    label: widget.studentIndex == null ? 'Додати' : 'Оновити',
                     color: const Color.fromARGB(255, 181, 255, 34),
                     onPressed: _saveStudent,
                   ),

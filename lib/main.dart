@@ -20,7 +20,7 @@ class UniversityApp extends StatelessWidget {
       title: 'Університет',
       theme: ThemeData(
         primarySwatch: Colors.teal,
-        textTheme: GoogleFonts.robotoTextTheme(),
+        textTheme: GoogleFonts.latoTextTheme(),
       ),
       home: const TabsScreen(),
     );

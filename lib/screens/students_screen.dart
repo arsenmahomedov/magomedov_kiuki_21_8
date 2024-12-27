@@ -9,7 +9,7 @@ class StudentsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final students = ref.watch(studentsProvider);
+    final studentsState = ref.watch(studentsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -29,32 +29,27 @@ class StudentsScreen extends ConsumerWidget {
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
-                builder: (_) => StudentForm(
-                  onSave: (newStudent) {
-                    ref.read(studentsProvider.notifier).addStudent(newStudent);
-                  },
-                ),
+                builder: (_) => const StudentForm(),
               );
             },
           ),
         ],
       ),
-      body: students.isEmpty
-          ? const Center(
-              child: Text(
-                'Список пустий',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
-              ),
-            )
-          : ListView.builder(
+      body: () {
+        if (studentsState.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (studentsState.students.isEmpty) {
+          return const Center(
+            child: Text("No students"),
+          );
+        } else {
+          return ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-              itemCount: students.length,
+              itemCount: studentsState.students.length,
               itemBuilder: (context, index) {
-                final student = students[index];
+                final student = studentsState.students[index];
 
                 return Dismissible(
                   key: ValueKey(student.id),
@@ -74,7 +69,7 @@ class StudentsScreen extends ConsumerWidget {
                   ),
                   onDismissed: (_) {
                     final removedStudent = student;
-                    ref.read(studentsProvider.notifier).removeStudent(index);
+                    ref.read(studentsProvider.notifier).remove(index);
                     final curContext = ProviderScope.containerOf(context);
 
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -90,11 +85,15 @@ class StudentsScreen extends ConsumerWidget {
                           onPressed: () {
                             curContext
                                 .read(studentsProvider.notifier)
-                                .undoRemove();
+                                .undo();
                           },
                         ),
                       ),
-                    );
+                    ).closed.then((value) {
+                        if (value != SnackBarClosedReason.action) {
+                          ref.read(studentsProvider.notifier).erase();
+                        }
+                      });
                   },
                   child: StudentItem(
                     student: student,
@@ -106,20 +105,16 @@ class StudentsScreen extends ConsumerWidget {
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(20)),
                         ),
-                        builder: (_) => StudentForm(
-                          student: student,
-                          onSave: (updatedStudent) {
-                            ref
-                                .read(studentsProvider.notifier)
-                                .updateStudent(index, updatedStudent);
-                          },
-                        ),
+                        builder: (_) => StudentForm(studentIndex: index),
                       );
                     },
                   ),
                 );
               },
-            ),
+            );
+        
+      }
+      }(),
     );
   }
 }
